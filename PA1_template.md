@@ -7,7 +7,8 @@ output:
 
 
 ## Loading and preprocessing the data
-```{r, echo=TRUE}
+
+```r
 # Unzip and read data
 stepdata <- read.csv(unz("activity.zip", "activity.csv"))
 
@@ -18,7 +19,8 @@ stepdata$date <- as.POSIXct(stepdata$date, tz = "UTC") +
 ```
 
 ## What is mean total number of steps taken per day?
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 # Load libaries
 library(dplyr)
 library(ggplot2)
@@ -30,17 +32,28 @@ dailySummary <-stepdata %>%
 
 # Plot histogram
 qplot(dailySummary$Total, geom="histogram")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
+```r
 # Calculate mean and median of total steps per day
 summarize(dailySummary,
           Mean = mean(Total, na.rm = TRUE),
           Median = median(Total, na.rm = TRUE))
+```
 
+```
+## # A tibble: 1 x 2
+##    Mean Median
+##   <dbl>  <int>
+## 1 10766  10765
 ```
 
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 # Group by 5-minute interval and calculate average
 intervalSummary <-stepdata %>%
       group_by(interval) %>%
@@ -49,23 +62,40 @@ intervalSummary <-stepdata %>%
 # Plot timeseries with average steps
 ggplot(intervalSummary, aes(x = interval, y = AverageSteps)) +
       geom_line()
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+```r
 # Find 5-minute interval with maximum average steps
 intervalSummary[which.max(intervalSummary$AverageSteps),]
+```
+
+```
+## # A tibble: 1 x 2
+##   interval AverageSteps
+##      <int>        <dbl>
+## 1      835          206
 ```
 
 
 ## Imputing missing values
 1. Count the number of rows with missing step values
-```{r}
+
+```r
 sum(is.na(stepdata$steps))
+```
+
+```
+## [1] 2304
 ```
 
 2. Strategy for imputing missing values
 Calculate the missing value as the mean of steps for same 5-minute interval.
 
 3. Create dataset with imputed step values
-```{r}
+
+```r
 stepdataImputed <- stepdata
 
 for (i in 1:nrow(stepdataImputed)) {
@@ -76,7 +106,8 @@ for (i in 1:nrow(stepdataImputed)) {
 ```
 
 4. Histogram, mean and median for data with imputed values
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 # Group by date and calculate total
 dailySummaryImputed <-stepdataImputed %>%
       group_by(date = as.Date(stepdata$date, tz = "UTC")) %>%
@@ -84,18 +115,30 @@ dailySummaryImputed <-stepdataImputed %>%
 
 # Plot histogram
 qplot(dailySummaryImputed$Total, geom="histogram")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
+```r
 # Calculate mean and median of total steps per day
 summarize(dailySummaryImputed,
           Mean = mean(Total, na.rm = TRUE),
           Median = median(Total, na.rm = TRUE))
+```
+
+```
+## # A tibble: 1 x 2
+##    Mean Median
+##   <dbl>  <dbl>
+## 1 10766  10762
 ```
 Mean and median values change only very little after imputation.
 The total number of daily steps increases after imputation, since NA is now replaced and thereby counting in the total.
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 stepdataImputed$daytype <- "weekday"
 stepdataImputed[grepl("Saturday|Sunday",weekdays(stepdataImputed$date)),]$daytype <- "weekend"
 
@@ -111,3 +154,5 @@ ggplot(intervalSummaryByDaytype, aes(x = interval, y = AverageSteps)) +
       ylab("Number of steps") +
       facet_grid(daytype ~ .)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
